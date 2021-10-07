@@ -12,8 +12,10 @@ namespace TextAdventure.src
             {
                 ConsoleKeyInfo resault = Console.ReadKey();
 
-                if (resault != null) //키보드에서 입력을 받았을 때
+                if (resault != null) //키보드에서 입력을 받았을 때 
+                {
                     Console.WriteLine(resault.Key);
+                }
             }
 
         }
