@@ -10,7 +10,7 @@ namespace TextAdventure.src
         public int posX { get; set; }
         public int posY { get; set; }
 
-        public int Health = 100;
+        public const int Health = 100;
         public int HP { get; set; }
         public int Atk { get; set; }
 

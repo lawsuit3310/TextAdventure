@@ -64,7 +64,7 @@ namespace TextAdventure.src
         public void printStatus()
         {
 
-            Console.WriteLine("{0}/{1}",HP,Health);
+            Console.WriteLine("적 현재 체력 : {0}/{1}",HP,Health);
         }
     }
 }

@@ -30,13 +30,14 @@ namespace TextAdventure.src
 
         static BG bg = new BG();
 
-        public static Cursor Location = new Cursor(10);
+        public static Player Location = new Player(10);
         static Cursor Portal = new Cursor();
 
         static Enemy Enemy = new Enemy(10);
 
         static Item item = new Item();
 
+        static ConsoleKeyInfo result;
         static Random rand = new Random();
 
         #endregion 
@@ -159,7 +160,7 @@ namespace TextAdventure.src
         {
             ConsoleKeyInfo resault = Console.ReadKey();
 
-            if (resault != null && !isOnBattle) //키보드에서 입력을 받았을 때 
+            if (resault != null && !isOnBattle && Location.HP > 0) //키보드에서 입력을 받았을 때 
             {
                 EnemyMove();
 
@@ -232,41 +233,75 @@ namespace TextAdventure.src
                     Console.WriteLine("{0}, {1}", Enemy.posX, Enemy.posY);
                 }
             }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("큭.... 체력이 다 떨어졌다...");
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("Enter를 눌러 계속하십시요.");
+                ConsoleKeyInfo result = Console.ReadKey();
+
+                while (true)
+                { 
+                    result = Console.ReadKey();
+                    if (result.Key == ConsoleKey.Enter)
+                        Environment.Exit(0);
+                }
+            }
         }
 
         static void EnemyMove()
         {
-            if (Enemy.moveChance < 0)
+            if (!isOnBattle)
             {
-                Enemy.moveChance++;
-                return;
+                if (Enemy.moveChance < 0)
+                {
+                    Enemy.moveChance++;
+                    return;
+                }
+                else
+                {
+                    Enemy.moveChance = 0;
+                    if (Math.Abs(Enemy.posX - Location.posX) > Math.Abs(Enemy.posY - Location.posY)) //y방향으로 더 가까울때
+                    {
+                        if (Math.Abs(Enemy.posX) > Math.Abs(Location.posX))
+                        {
+                            Enemy.posX--;
+                        }
+                        else
+                        {
+                            Enemy.posX++;
+                        }
+                    }
+                    else if (Math.Abs(Enemy.posX - Location.posX) < Math.Abs(Enemy.posY - Location.posY)) //x방향으로 더 가까울때
+                    {
+                        if (Math.Abs(Enemy.posY) > Math.Abs(Location.posY))
+                        {
+                            Enemy.posY--;
+                        }
+                        else
+                        {
+                            Enemy.posY++;
+                        }
+                    }
+                }
             }
             else
             {
-                Enemy.moveChance = 0;
-                if (Math.Abs(Enemy.posX - Location.posX) > Math.Abs(Enemy.posY - Location.posY)) //y방향으로 더 가까울때
+                ConsoleKeyInfo result = Console.ReadKey();
+
+                if (result != null)
                 {
-                    if (Math.Abs(Enemy.posX) > Math.Abs(Location.posX))
-                    {
-                        Enemy.posX--;
-                    }
-                    else
-                    {
-                        Enemy.posX++;
-                    }
-                }
-                else if (Math.Abs(Enemy.posX - Location.posX) < Math.Abs(Enemy.posY - Location.posY)) //x방향으로 더 가까울때
-                {
-                    if (Math.Abs(Enemy.posY) > Math.Abs(Location.posY))
-                    {
-                        Enemy.posY--;
-                    }
-                    else
-                    {
-                        Enemy.posY++;
-                    }
+                    Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    printEnemy();
+                    Console.WriteLine("==============================================\n" +
+                        "큭...적에게 공격당해 {0}의 데미지를 입었다!", Enemy.Atk);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Location.Damaged(Enemy);
                 }
             }
+            
         }
 
         static bool Check()
@@ -299,28 +334,39 @@ namespace TextAdventure.src
 
         static void onBattle()
         {
-            ConsoleKeyInfo result = Console.ReadKey();
+            result = Console.ReadKey();
+            
+            Console.Clear();
+            printEnemy();
+            Console.WriteLine("앗! 적이 싸움을 걸어왔다");
+ 
             while (true)
             {
                 if (result != null)
                 {
-                    Console.Clear();
-
-                    printEnemy();
-                    printDialog();
-                    Enemy.printStatus();
-
                     result = Console.ReadKey();
 
+                    if (result.Key == ConsoleKey.Enter)
+                    {
+                        Console.Clear();
+                        printEnemy();
+                        Enemy.printStatus();
+                        printDialog();
+                        Location.printStatus();
+                    }
+                    else continue;
 
+                    result = Console.ReadKey();
                     switch (result.Key)
                     {
                         case ConsoleKey.D1:
                             Console.Clear();
                             printEnemy();
+                            Console.WriteLine("==============================================\n" +
+                                "적에게 공격하여 {0}의 피해를 입혔다!",Location.Atk);
                             Enemy.Damaged(Location);
-
-
+                            if (Enemy.HP > 0) EnemyMove();
+                            else ExitBattle();
                             break;
                         case ConsoleKey.D2:
                             break;
@@ -331,7 +377,7 @@ namespace TextAdventure.src
                     if (Enemy.HP <= 0)
                     {
                         Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Blue;
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
                         printEnemy();
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("전투에서 승리했다!");
@@ -355,7 +401,6 @@ namespace TextAdventure.src
 
         static void printDialog()
         {
-            Console.WriteLine("=========적이 싸움을 걸어왔다!==========");
             Console.WriteLine("\n무엇을 할까?");
 
             Console.WriteLine("1.싸운다 \t\t 2. 아이템");
