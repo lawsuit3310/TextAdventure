@@ -8,16 +8,17 @@ namespace TextAdventure.src
     class Program
     {
 
-        static int x_Count = 1;
-        static int y_Count = 1;
+        static int x_Count_Pos = 1;
+        static int y_Count_Pos = 1;
 
         static BG bg = new BG();
         static Cursor Location = new Cursor();
+        static Random rand = new Random();
 
 
         public static void Main(string[] args)
         {
-            bg.Create(16,8);
+            bg.Create(rand.Next(30),rand.Next(30));
 
             Location.posX = 0;
             Location.posY = 0;
@@ -42,19 +43,19 @@ namespace TextAdventure.src
         public static void DrawBG()
         {
             do {
-                y_Count = 0;
-                x_Count = 0;
+                x_Count_Pos = 0;
+                y_Count_Pos = 0;
             } while (false);
 
             foreach (List<string> bg_Line in bg.Frame)
             {
-                x_Count = 0;
-                ++y_Count;
+                x_Count_Pos = 0;
+                ++y_Count_Pos;
                 foreach (string bg_Text in bg_Line)
                 {
-                    ++x_Count;
+                    ++x_Count_Pos;
 
-                    if (x_Count-1 == Location.posX && y_Count-1 == Location.posY)
+                    if (x_Count_Pos - 1 == Location.posX && y_Count_Pos - 1 == Location.posY)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("Y");
