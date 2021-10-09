@@ -9,9 +9,7 @@ namespace TextAdventure.src
         public int posX { get; set; }
         public int posY { get; set; }
 
-        static Program main = new Program();
-
-        public void CreatePortal(int posX, int posY)
+        public void Create(int posX, int posY)
         {
             this.posX = posX;
             this.posY = posY;
