@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using System.Runtime.CompilerServices;
 
 namespace TextAdventure.src
@@ -18,25 +16,27 @@ namespace TextAdventure.src
         static int x_Count_Enemy = 1;
         static int y_Count_Enemy = 1;
 
-
         static int x_Count_item = 1;
         static int y_Count_item = 1;
 
         static int score = 0;
 
+
+
         static Boolean isOnPortal = false;
         static Boolean isFacingEnemy = false;
         static Boolean isOnBattle = false;
+        static Boolean isBattleAble = false;
 
         static BG bg = new BG();
-        
-        public static Cursor Location = new Cursor();
+
+        public static Cursor Location = new Cursor(10);
         static Cursor Portal = new Cursor();
-        
-        static Enemy Enemy = new Enemy();
+
+        static Enemy Enemy = new Enemy(10);
 
         static Item item = new Item();
-        
+
         static Random rand = new Random();
 
         #endregion 
@@ -63,18 +63,19 @@ namespace TextAdventure.src
 
         public static void DrawBG()
         {
-            Console.WriteLine("점수 : {0}",score);
+            Console.WriteLine("점수 : {0}", score);
 
-            do {
+            do
+            {
                 x_Count_Pos = 0;
                 y_Count_Pos = 0;
-                
+
                 x_Count_Portal = 0;
                 y_Count_Portal = 0;
 
                 x_Count_Enemy = 0;
                 y_Count_Enemy = 0;
-                
+
                 x_Count_item = 0;
                 y_Count_item = 0;
             } while (false);
@@ -160,7 +161,7 @@ namespace TextAdventure.src
             if (resault != null && !isOnBattle) //키보드에서 입력을 받았을 때 
             {
                 EnemyMove();
-             
+
                 switch (resault.Key)
                 {
                     case ConsoleKey.UpArrow: //위쪽 방향키
@@ -185,14 +186,14 @@ namespace TextAdventure.src
 
                 }
 
-                if (Location.posX < 0)  Location.posX = 0;
-                if (Location.posY < 0)  Location.posY = 0;
+                if (Location.posX < 0) Location.posX = 0;
+                if (Location.posY < 0) Location.posY = 0;
                 if (Location.posX >= bg.Line.Count)
                 {
-                    Location.posX = bg.Line.Count-1;
+                    Location.posX = bg.Line.Count - 1;
                 }
-                if (Location.posY >= bg.Frame.Count) Location.posY = bg.Frame.Count-1; //커서가 배경 밖으로 빠져나올경우 위치 고정
-                
+                if (Location.posY >= bg.Frame.Count) Location.posY = bg.Frame.Count - 1; //커서가 배경 밖으로 빠져나올경우 위치 고정
+
                 UPDStatus();
 
                 if (isOnPortal)
@@ -204,11 +205,10 @@ namespace TextAdventure.src
                     {
                         Console.WriteLine("알겠습니다.");
                         Console.WriteLine("아무키나 입력하면 넘어갑니다..");
-                        
+
                         Start();
 
                         PlayerMove();
-                        
                     }
                     else
                     {
@@ -217,17 +217,17 @@ namespace TextAdventure.src
 
                 }
 
-                if (isFacingEnemy)
+                if (isFacingEnemy && isBattleAble)
                 {
                     Console.WriteLine("앗! 적과 마주했다!");
                     isOnBattle = true;
                     onBattle();
-                    
+
                 }
 
                 if (CallerName != "PlayerMove" && !isOnBattle) //스스로에게 호출되거나 전투 중 일경우 좌표를 출력하지 않음.
                 {
-                    Console.WriteLine("{0}, {1}", Location.posX, Location.posY); 
+                    Console.WriteLine("{0}, {1}", Location.posX, Location.posY);
                     Console.WriteLine("{0}, {1}", Enemy.posX, Enemy.posY);
                 }
             }
@@ -280,27 +280,89 @@ namespace TextAdventure.src
         {
             Location.posX = 0;
             Location.posY = 0;
-            bg.Create(rand.Next(1,30), rand.Next(1,30));
+            bg.Create(rand.Next(1, 30), rand.Next(1, 30));
             Portal.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
-            
+
             Enemy.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
+
+            isBattleAble = true;
 
             do
             {
                 item.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
             } while (Portal.posX != item.posX && Portal.posY != item.posY);
-            
+
             score++;
         }
 
         static void onBattle()
         {
-            ConsoleKeyInfo resault = Console.ReadKey();
-
-            if (resault != null)   
+            ConsoleKeyInfo result = Console.ReadKey();
+            while (true)
             {
-                Console.Clear();
+                if (result != null)
+                {
+                    Console.Clear();
+
+                    printEnemy();
+                    printDialog();
+                    Enemy.printStatus();
+
+                    result = Console.ReadKey();
+
+
+                    switch (result.Key)
+                    {
+                        case ConsoleKey.D1:
+                            Console.Clear();
+                            printEnemy();
+                            Enemy.Damaged(Location);
+                            
+                            
+                            break;
+                        case ConsoleKey.D2:
+                            break;
+                        default:
+                            break;
+                    }
+                    
+                    if (Enemy.HP <= 0)
+                    {
+                        Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        printEnemy();
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine("전투에서 승리했다!");
+                        ExitBattle();
+                        break;
+                    }
+
+
+                }
             }
+        }
+
+        static void printEnemy()
+        {
+            foreach (string Line in Enemy.Image)
+            {
+                Console.WriteLine(Line);
+            }
+
+        }
+
+        static void printDialog()
+        {
+            Console.WriteLine("=========적이 싸움을 걸어왔다!==========");
+            Console.WriteLine("\n무엇을 할까?");
+
+            Console.WriteLine("1.싸운다 \t\t 2. 아이템");
+        }
+
+        static void ExitBattle()
+        {
+            isBattleAble = false;
+            isOnBattle = false;
         }
 
 
