@@ -27,16 +27,20 @@ namespace TextAdventure.src
         static Boolean isFacingEnemy = false;
         static Boolean isOnBattle = false;
         static Boolean isBattleAble = false;
+        static Boolean isSkip = false;
+        static Boolean isOnItem = false;
 
         static BG bg = new BG();
 
         public static Player Location = new Player(10);
         static Cursor Portal = new Cursor();
 
-        static Enemy Enemy = new Enemy(10);
+        static Enemy Enemy = new Enemy(5);
 
-        static Item item = new Item();
+        static List<Item> items = new List<Item>();
 
+        static List<int[]> itemPos = new List<int[]>();
+ 
         static ConsoleKeyInfo result;
         static Random rand = new Random();
 
@@ -81,6 +85,8 @@ namespace TextAdventure.src
                 y_Count_item = 0;
             } while (false);
 
+            itemPos.Clear();
+
             foreach (List<string> bg_Line in bg.Frame)
             {
                 x_Count_Pos = 0;
@@ -93,18 +99,30 @@ namespace TextAdventure.src
                 ++y_Count_Enemy;
                 ++y_Count_item;
 
+                
+
                 foreach (string bg_Text in bg_Line)
                 {
                     ++x_Count_Enemy;
                     ++x_Count_Pos;
                     ++x_Count_Portal;
                     ++x_Count_item;
+                    
+                    isSkip = false;
 
                     if (x_Count_Pos - 1 == Location.posX && y_Count_Pos - 1 == Location.posY)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("Y");
                         Console.ForegroundColor = ConsoleColor.White;
+                        
+                        foreach (int[] pos in itemPos)
+                        {
+                            if (pos.Equals(new int[] { Location.posX, Location.posY }))
+                                isOnItem = true;
+                            else
+                                isOnItem = false;
+                        }
                         continue;
                     } //플레이어 위치 생성
 
@@ -135,13 +153,19 @@ namespace TextAdventure.src
                         continue;
                     } //적 생성
 
-                    if (x_Count_item - 1 == item.posX && y_Count_item - 1 == item.posY)
+                    foreach (Item item in items)
                     {
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        Console.Write("I");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        continue;
+                        if (x_Count_item - 1 == item.posX && y_Count_item - 1 == item.posY)
+                        {
+                            itemPos.Add(new int[] {item.posX, item.posY });
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                            Console.Write("I");
+                            Console.ForegroundColor = ConsoleColor.White;
+                            isSkip = true;
+                            continue;
+                        }
                     }
+
                     if (Location.posX == Portal.posX && Location.posY == Portal.posY)
                     {
                         isOnPortal = true;
@@ -150,7 +174,7 @@ namespace TextAdventure.src
 
 
 
-                    Console.Write(bg_Text);
+                    if (!isSkip) Console.Write(bg_Text);
                 }
                 Console.WriteLine();
             }
@@ -219,6 +243,11 @@ namespace TextAdventure.src
 
                 }
 
+                else if (isOnItem)
+                {
+                    Console.WriteLine("아이템 위에 있습니다.");
+                }
+
                 if (isFacingEnemy && isBattleAble)
                 {
                     Console.WriteLine("앗! 적과 마주했다!");
@@ -231,6 +260,11 @@ namespace TextAdventure.src
                 {
                     Console.WriteLine("{0}, {1}", Location.posX, Location.posY);
                     Console.WriteLine("{0}, {1}", Enemy.posX, Enemy.posY);
+                }
+
+                foreach (int[] po in itemPos)
+                {
+                    Console.WriteLine(po);
                 }
             }
             else
@@ -314,6 +348,10 @@ namespace TextAdventure.src
 
         static void Start()
         {
+            int i = 0;
+
+            items.Clear();
+
             Location.posX = 0;
             Location.posY = 0;
             bg.Create(rand.Next(1, 30), rand.Next(1, 30));
@@ -323,11 +361,20 @@ namespace TextAdventure.src
             Enemy.HP = Enemy.Health;
 
             isBattleAble = true;
-
-            do
+            int itemCnt = rand.Next(1, 4);
+            while (i < itemCnt)
             {
-                item.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
-            } while (Portal.posX != item.posX && Portal.posY != item.posY);
+                Item item = new Item();
+
+                do
+                {
+                    item.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
+                } while (Portal.posX != item.posX && Portal.posY != item.posY);
+                items.Add(item);
+                i++;
+            }
+
+            itemPos.Clear();
 
             score++;
         }
@@ -360,19 +407,31 @@ namespace TextAdventure.src
                     switch (result.Key)
                     {
                         case ConsoleKey.D1:
+                            
                             Console.Clear();
                             printEnemy();
+                            if (Location.HP <= 0)
+                            {
+                                ExitBattle();
+                                break;
+                            }
                             Console.WriteLine("==============================================\n" +
                                 "적에게 공격하여 {0}의 피해를 입혔다!",Location.Atk);
                             Enemy.Damaged(Location);
-                            if (Enemy.HP > 0) EnemyMove();
-                            else ExitBattle();
+                            
+                            if (Enemy.HP <= 0) ExitBattle();
+                            
+                            //ExitBattle();
+
+                            else EnemyMove();
                             break;
                         case ConsoleKey.D2:
                             break;
                         default:
                             break;
                     }
+
+                    if (Location.HP <= 0) break;
 
                     if (Enemy.HP <= 0)
                     {
@@ -411,7 +470,6 @@ namespace TextAdventure.src
             isBattleAble = false;
             isOnBattle = false;
         }
-
 
     }
 }

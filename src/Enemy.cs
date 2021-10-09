@@ -6,7 +6,7 @@ namespace TextAdventure.src
 {
     class Enemy : Cursor
     {
-        public int HP { get; set; }
+        public int HP { get; set; } = 50;
         public int moveChance { get; set; }
         public static string[] Image = {
                 "@@@@@@@@@@@@@@@@@@@@@*.@@@@@@@@@@@@@@@@@",
