@@ -12,6 +12,8 @@ namespace TextAdventure.src
 
         public void Create(int height, int width)
         {
+            Clear();
+            
             for (int i = 0; i < height; i++)
             {
                 Line.Add("0");
@@ -20,6 +22,11 @@ namespace TextAdventure.src
             {
                 Frame.Add(Line);
             }
+        }
+        public void Clear()
+        {
+            Line.Clear();
+            Frame.Clear();
         }
     }
 }
