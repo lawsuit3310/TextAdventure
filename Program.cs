@@ -11,8 +11,6 @@ namespace TextAdventure.src
         static int x_Count = 1;
         static int y_Count = 1;
 
-        static Boolean debugStatus = false;
-
         static BG bg = new BG();
         static Cursor Location = new Cursor();
 
@@ -58,7 +56,9 @@ namespace TextAdventure.src
 
                     if (x_Count-1 == Location.posX && y_Count-1 == Location.posY)
                     {
-                        Console.Write("1");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("Y");
+                        Console.ForegroundColor = ConsoleColor.White;
                         continue;
                     }
                         
@@ -74,8 +74,6 @@ namespace TextAdventure.src
 
             if (resault != null) //키보드에서 입력을 받았을 때 
             {
-
-                if(debugStatus) UPDStatus();
                 Console.WriteLine(resault.Key);
 
                 switch (resault.Key)
@@ -106,20 +104,10 @@ namespace TextAdventure.src
                 if (Location.posY < 0)  Location.posY = 0;
                 if (Location.posX >= bg.Line.Count) Location.posX = bg.Line.Count-1;
                 if (Location.posY >= bg.Frame.Count) Location.posY = bg.Frame.Count-1; //커서가 배경 밖으로 빠져나올경우 위치 고정
-
-                Console.WriteLine(bg.Frame.Count);
-
-                Console.WriteLine(bg.Frame[Location.posY]);
-
-                List<string> temp = (List<string>)bg.Frame[Location.posY];
-
                 
-
-                if (!debugStatus) UPDStatus(); 
+                UPDStatus(); 
                 
                 Console.WriteLine("{0}, {1}", Location.posX, Location.posY);
-
-
 
             }
         }
