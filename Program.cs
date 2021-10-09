@@ -113,19 +113,15 @@ namespace TextAdventure.src
                         Console.Write("P");
                         Console.ForegroundColor = ConsoleColor.White;
                         continue;
+
+
                     } //포탈 위치 생성
 
-                    if (x_Count_Enemy - 1 == Enemy.posX && y_Count_Enemy - 1 == Enemy.posY)
+                    if (x_Count_Enemy - 1 == Enemy.posX && y_Count_Enemy - 1 == Enemy.posY && isBattleAble)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkGreen;
                         Console.Write("E");
                         Console.ForegroundColor = ConsoleColor.White;
-
-                        if (Location.posX == Portal.posX && Location.posY == Portal.posY)
-                        {
-                            isOnPortal = true;
-                        }
-                        else isOnPortal = false;
 
                         if (
                             (Math.Abs(Location.posX - Enemy.posX) == 1 || Location.posX == Enemy.posX) &&
@@ -145,6 +141,11 @@ namespace TextAdventure.src
                         Console.ForegroundColor = ConsoleColor.White;
                         continue;
                     }
+                    if (Location.posX == Portal.posX && Location.posY == Portal.posY)
+                    {
+                        isOnPortal = true;
+                    }
+                    else isOnPortal = false;
 
 
 
@@ -284,6 +285,7 @@ namespace TextAdventure.src
             Portal.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
 
             Enemy.Create(rand.Next(bg.Line.Count - 1), rand.Next(bg.Frame.Count - 1));
+            Enemy.HP = Enemy.Health;
 
             isBattleAble = true;
 
@@ -317,15 +319,15 @@ namespace TextAdventure.src
                             Console.Clear();
                             printEnemy();
                             Enemy.Damaged(Location);
-                            
-                            
+
+
                             break;
                         case ConsoleKey.D2:
                             break;
                         default:
                             break;
                     }
-                    
+
                     if (Enemy.HP <= 0)
                     {
                         Console.Clear();
