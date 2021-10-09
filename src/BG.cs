@@ -7,7 +7,7 @@ namespace TextAdventure.src
 {
     class BG
     {
-        public ArrayList Line = new ArrayList();
+        public List<string> Line = new List<string>();
         public ArrayList Frame = new ArrayList();
 
         public void Create(int height, int width)
