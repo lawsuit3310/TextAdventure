@@ -430,7 +430,7 @@ namespace TextAdventure.src
 
             while (true)
             {
-                if (result != null)
+                if (result != null && !isOnInventory)
                 {
                     result = Console.ReadKey();
 
@@ -467,6 +467,7 @@ namespace TextAdventure.src
                             else EnemyMove();
                             break;
                         case ConsoleKey.D2:
+                            OpenInventory();
                             break;
                         default:
                             break;
@@ -487,6 +488,7 @@ namespace TextAdventure.src
 
 
                 }
+                else if (isOnInventory) OpenInventory();
             }
         }
 
@@ -551,6 +553,12 @@ namespace TextAdventure.src
                     idx++;
                     break;
                 case ConsoleKey.Enter:
+                    if(Inventory.Count == 0)
+                    {
+                        Console.WriteLine("사용할수 없는 아이템이 없습니다!");
+                        result = Console.ReadKey();
+                        if(result != null) break;
+                    }
                     Console.WriteLine("아이템을 사용합니까? Y/N");
                     result = Console.ReadKey();
                     UseItem(result, idx);
