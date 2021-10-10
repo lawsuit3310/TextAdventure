@@ -21,7 +21,7 @@ namespace TextAdventure.src
 
         static int score = 0;
 
-
+        static int idx = 0;
 
         static Boolean isOnPortal = false;
         static Boolean isFacingEnemy = false;
@@ -29,6 +29,7 @@ namespace TextAdventure.src
         static Boolean isBattleAble = false;
         static Boolean isSkip = false;
         static Boolean isOnItem = false;
+        static Boolean isOnInventory = false;
 
         static BG bg = new BG();
 
@@ -38,23 +39,27 @@ namespace TextAdventure.src
         static Enemy Enemy = new Enemy(5);
 
         static List<Item> items = new List<Item>();
+        static List<Item> Inventory = new List<Item>();
 
         static List<int[]> itemPos = new List<int[]>();
- 
+
         static ConsoleKeyInfo result;
         static Random rand = new Random();
 
         #endregion 
         public static void Main(string[] args)
         {
-            Console.WriteLine("엔터키를 누르면 시작합니다.");
+            Console.WriteLine("엔터키를 누르면 시작합니다.\n");
+            Console.WriteLine("게임 중 E키를 누르면 인벤토리를 열 수 있습니다.\n");
+            Console.WriteLine("소스 코드 https://github.com/lawsuit3310/TextAdventure.");
             Start();
             score = 0;
             PlayerMove();
 
             while (true)
             {
-                PlayerMove();
+                if (!isOnInventory) PlayerMove();
+                else OpenInventory();
             }
 
         }
@@ -62,6 +67,9 @@ namespace TextAdventure.src
         public static void UPDStatus() //키보드에서 입력을 받아 위치 초기화
         {
             Console.Clear();
+
+            if (Location.HP > Cursor.Health)
+                Location.HP = Cursor.Health;
 
             DrawBG();
         }
@@ -72,6 +80,7 @@ namespace TextAdventure.src
 
             do
             {
+                #region 초기값 설정
                 x_Count_Pos = 0;
                 y_Count_Pos = 0;
 
@@ -83,9 +92,8 @@ namespace TextAdventure.src
 
                 x_Count_item = 0;
                 y_Count_item = 0;
+                #endregion
             } while (false);
-
-            itemPos.Clear();
 
             foreach (List<string> bg_Line in bg.Frame)
             {
@@ -99,7 +107,8 @@ namespace TextAdventure.src
                 ++y_Count_Enemy;
                 ++y_Count_item;
 
-                
+
+
 
                 foreach (string bg_Text in bg_Line)
                 {
@@ -107,7 +116,7 @@ namespace TextAdventure.src
                     ++x_Count_Pos;
                     ++x_Count_Portal;
                     ++x_Count_item;
-                    
+
                     isSkip = false;
 
                     if (x_Count_Pos - 1 == Location.posX && y_Count_Pos - 1 == Location.posY)
@@ -115,13 +124,15 @@ namespace TextAdventure.src
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("Y");
                         Console.ForegroundColor = ConsoleColor.White;
-                        
+
                         foreach (int[] pos in itemPos)
                         {
-                            if (pos.Equals(new int[] { Location.posX, Location.posY }))
+                            if (pos[0] == Location.posX && pos[1] == Location.posY)
+                            {
                                 isOnItem = true;
-                            else
-                                isOnItem = false;
+                                break;
+                            }
+                            else isOnItem = false;
                         }
                         continue;
                     } //플레이어 위치 생성
@@ -157,7 +168,6 @@ namespace TextAdventure.src
                     {
                         if (x_Count_item - 1 == item.posX && y_Count_item - 1 == item.posY)
                         {
-                            itemPos.Add(new int[] {item.posX, item.posY });
                             Console.ForegroundColor = ConsoleColor.DarkYellow;
                             Console.Write("I");
                             Console.ForegroundColor = ConsoleColor.White;
@@ -173,7 +183,6 @@ namespace TextAdventure.src
                     else isOnPortal = false;
 
 
-
                     if (!isSkip) Console.Write(bg_Text);
                 }
                 Console.WriteLine();
@@ -184,7 +193,7 @@ namespace TextAdventure.src
         {
             ConsoleKeyInfo resault = Console.ReadKey();
 
-            if (resault != null && !isOnBattle && Location.HP > 0) //키보드에서 입력을 받았을 때 
+            if (resault != null && !isOnBattle && !isOnInventory && Location.HP > 0) //키보드에서 입력을 받았을 때 
             {
                 EnemyMove();
 
@@ -209,6 +218,11 @@ namespace TextAdventure.src
                         Console.WriteLine("true");
                         Location.posX++;
                         break;
+                    case ConsoleKey.E:
+                        idx = 0;
+                        isOnInventory = true;
+                        OpenInventory();
+                        break;
 
                 }
 
@@ -232,6 +246,8 @@ namespace TextAdventure.src
                         Console.WriteLine("알겠습니다.");
                         Console.WriteLine("아무키나 입력하면 넘어갑니다..");
 
+                        Location.Atk++;
+
                         Start();
 
                         PlayerMove();
@@ -245,7 +261,29 @@ namespace TextAdventure.src
 
                 else if (isOnItem)
                 {
-                    Console.WriteLine("아이템 위에 있습니다.");
+                    Console.WriteLine("아이템을 주웠다.");
+
+                    foreach (Item item in items)
+                    {
+                        isSkip = false;
+                        Console.WriteLine("{0},{1}", item.posX, item.posY);
+
+                        foreach (int[] itm in itemPos)
+                        {
+                            if (itm[0] == item.posX && itm[1] == item.posY)
+                            {
+                                if (itm[0] == Location.posX && itm[1] == Location.posY)
+                                {
+                                    isSkip = true;
+                                    Inventory.Add(item);
+                                    items.Remove(item);
+                                    break;
+                                }
+                            }
+
+                        }
+                        if (isSkip) break;
+                    }
                 }
 
                 if (isFacingEnemy && isBattleAble)
@@ -259,13 +297,11 @@ namespace TextAdventure.src
                 if (CallerName != "PlayerMove" && !isOnBattle) //스스로에게 호출되거나 전투 중 일경우 좌표를 출력하지 않음.
                 {
                     Console.WriteLine("{0}, {1}", Location.posX, Location.posY);
-                    Console.WriteLine("{0}, {1}", Enemy.posX, Enemy.posY);
                 }
-
-                foreach (int[] po in itemPos)
-                {
-                    Console.WriteLine(po);
-                }
+            }
+            else if (isOnInventory)
+            {
+                OpenInventory();
             }
             else
             {
@@ -273,10 +309,10 @@ namespace TextAdventure.src
                 Console.WriteLine("큭.... 체력이 다 떨어졌다...");
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine("Enter를 눌러 계속하십시요.");
-                ConsoleKeyInfo result = Console.ReadKey();
+                ConsoleKeyInfo result;
 
                 while (true)
-                { 
+                {
                     result = Console.ReadKey();
                     if (result.Key == ConsoleKey.Enter)
                         Environment.Exit(0);
@@ -335,7 +371,7 @@ namespace TextAdventure.src
                     Location.Damaged(Enemy);
                 }
             }
-            
+
         }
 
         static bool Check()
@@ -376,17 +412,22 @@ namespace TextAdventure.src
 
             itemPos.Clear();
 
+            foreach (Item item in items)
+            {
+                itemPos.Add(new int[] { item.posX, item.posY });
+            }
+
             score++;
         }
 
         static void onBattle()
         {
             result = Console.ReadKey();
-            
+
             Console.Clear();
             printEnemy();
             Console.WriteLine("앗! 적이 싸움을 걸어왔다");
- 
+
             while (true)
             {
                 if (result != null)
@@ -407,7 +448,7 @@ namespace TextAdventure.src
                     switch (result.Key)
                     {
                         case ConsoleKey.D1:
-                            
+
                             Console.Clear();
                             printEnemy();
                             if (Location.HP <= 0)
@@ -416,11 +457,11 @@ namespace TextAdventure.src
                                 break;
                             }
                             Console.WriteLine("==============================================\n" +
-                                "적에게 공격하여 {0}의 피해를 입혔다!",Location.Atk);
+                                "적에게 공격하여 {0}의 피해를 입혔다!", Location.Atk);
                             Enemy.Damaged(Location);
-                            
+
                             if (Enemy.HP <= 0) ExitBattle();
-                            
+
                             //ExitBattle();
 
                             else EnemyMove();
@@ -470,6 +511,84 @@ namespace TextAdventure.src
             isBattleAble = false;
             isOnBattle = false;
         }
+        static void OpenInventory()
+        {
+            Console.Clear();
+            isOnInventory = true;
+            Console.WriteLine("==========Inventory==========");
+
+            ConsoleKeyInfo result ;
+
+            foreach (Item item in Inventory)
+            {
+                if (idx < 0) idx = 0;
+                if (idx >= Inventory.Count) idx = Inventory.Count - 1;
+
+                if (!Inventory[idx].Equals(item)) Console.Write("  ");
+                else Console.Write("▶ ");
+                switch (item.itemType)
+                {
+                    case 0:
+                        Console.WriteLine("체력 회복 (소)");
+                        break;
+                    case 1:
+                        Console.WriteLine("체력 회복 (중)");
+                        break;
+                }
+            }
+            Console.WriteLine("E키를 한 번 더 눌러 종료하세요\n");
+
+            Console.WriteLine("방향키 + 엔터로 아이템 선택이 가능 합니다.");
+
+            result = Console.ReadKey();
+
+            switch (result.Key)
+            {
+                case ConsoleKey.UpArrow:
+                    idx--;
+                    break;
+                case ConsoleKey.DownArrow:
+                    idx++;
+                    break;
+                case ConsoleKey.Enter:
+                    Console.WriteLine("아이템을 사용합니까? Y/N");
+                    result = Console.ReadKey();
+                    UseItem(result, idx);
+                    break;
+                case ConsoleKey.E:
+                    isOnInventory = false;
+                    break;
+                default:
+                    break;
+            }
+            //PlayerMove();
+
+        }
+
+        static void UseItem(ConsoleKeyInfo result, int idx)
+        {
+            if (result.Key== ConsoleKey.Escape || result.Key == ConsoleKey.N)
+            {
+                return;
+            }
+            else
+            {
+                switch (Inventory[idx].itemType)
+                {
+                    case 0:
+                        Inventory.Remove(Inventory[idx]);
+                        Location.HP += 20;
+                        Console.WriteLine("체력이 20 회복 되었습니다.");
+                        break;
+                    case 1:
+                        Inventory.Remove(Inventory[idx]);
+                        Location.HP += 50;
+                        Console.WriteLine("체력이 20 회복 되었습니다.");
+                        break;
+                }
+            }
+        }
+
 
     }
 }
