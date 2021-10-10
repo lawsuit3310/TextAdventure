@@ -12,7 +12,7 @@ namespace TextAdventure.src
 
         public Item()
         {
-            itemType = rand.Next(2);
+            itemType = rand.Next(3);
         }
     }
 }

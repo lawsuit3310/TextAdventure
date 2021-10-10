@@ -68,9 +68,6 @@ namespace TextAdventure.src
         {
             Console.Clear();
 
-            if (Location.HP > Cursor.Health)
-                Location.HP = Cursor.Health;
-
             DrawBG();
         }
 
@@ -193,6 +190,9 @@ namespace TextAdventure.src
         {
             ConsoleKeyInfo resault = Console.ReadKey();
 
+            if (Location.HP > Cursor.Health)
+                Location.HP = Cursor.Health;
+
             if (resault != null && !isOnBattle && !isOnInventory && Location.HP > 0) //키보드에서 입력을 받았을 때 
             {
                 EnemyMove();
@@ -246,7 +246,8 @@ namespace TextAdventure.src
                         Console.WriteLine("알겠습니다.");
                         Console.WriteLine("아무키나 입력하면 넘어갑니다..");
 
-                        Location.Atk++;
+                        if(rand.Next(10) < 7)
+                            Location.Atk++;
 
                         Start();
 
@@ -397,7 +398,7 @@ namespace TextAdventure.src
             Enemy.HP = Enemy.Health;
 
             isBattleAble = true;
-            int itemCnt = rand.Next(1, 4);
+            int itemCnt = rand.Next(1, 3); // 0개에서 1개 생성
             while (i < itemCnt)
             {
                 Item item = new Item();
@@ -536,6 +537,9 @@ namespace TextAdventure.src
                     case 1:
                         Console.WriteLine("체력 회복 (중)");
                         break;
+                    case 2:
+                        Console.WriteLine("공격력 상승 (소)");
+                        break;
                 }
             }
             Console.WriteLine("E키를 한 번 더 눌러 종료하세요\n");
@@ -585,13 +589,17 @@ namespace TextAdventure.src
                 {
                     case 0:
                         Inventory.Remove(Inventory[idx]);
-                        Location.HP += 20;
+                        Location.HP += 10;
                         Console.WriteLine("체력이 20 회복 되었습니다.");
                         break;
                     case 1:
                         Inventory.Remove(Inventory[idx]);
-                        Location.HP += 50;
+                        Location.HP += 25;
                         Console.WriteLine("체력이 20 회복 되었습니다.");
+                        break;
+                    case 2:
+                        Inventory.Remove(Inventory[idx]);
+                        Location.Atk++;
                         break;
                 }
             }
