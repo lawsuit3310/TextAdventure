@@ -64,6 +64,7 @@ namespace TextAdventure.src
 
         }
 
+        #region 메소드
         public static void UPDStatus() //키보드에서 입력을 받아 위치 초기화
         {
             Console.Clear();
@@ -605,6 +606,6 @@ namespace TextAdventure.src
             }
         }
 
-
+        #endregion
     }
 }
